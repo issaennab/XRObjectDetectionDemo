@@ -1,0 +1,23 @@
+# ninja log v5
+8	15070	1764357731372552591	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	81ff1b314b819290
+15070	24403	1764357740692679477	/Users/issaennab/dev/work/workspace/unity/HelloWorld/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/25152766/obj/arm64-v8a/libswappywrapper.so	da7fdcc6bebf1ce8
+7	15709	1764357732010154097	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	4c223abef13c2816
+6	15818	1764357732117741436	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	d2e991463b761483
+6	15606	1764357731905345754	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	13b521d64435f164
+6	15608	1764357731908529415	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	60ecfd05a7d43e06
+5	15632	1764357731932257380	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	727d70e478105862
+5	15666	1764357731966293913	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	1a13091df98be279
+7	15630	1764357731930179258	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	2ba3b436c82d5255
+5	15893	1764357732193740948	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	524a2812c6939222
+15893	24387	1764357740688050359	/Users/issaennab/dev/work/workspace/unity/HelloWorld/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/25152766/obj/arm64-v8a/libgame.so	f0545035c93bc6a4
+7	15480	1764379738152468910	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	81ff1b314b819290
+6	16050	1764379738719045620	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	13b521d64435f164
+5	16066	1764379738735228933	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	60ecfd05a7d43e06
+4	16079	1764379738749081731	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	727d70e478105862
+6	16081	1764379738752444753	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	2ba3b436c82d5255
+5	16113	1764379738783274161	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	1a13091df98be279
+6	16167	1764379738837145176	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	4c223abef13c2816
+5	16258	1764379738927877514	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	d2e991463b761483
+3	16329	1764379738998716723	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	524a2812c6939222
+16329	25054	1764379747722702162	/Users/issaennab/dev/work/workspace/unity/HelloWorld/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/25152766/obj/arm64-v8a/libgame.so	f0545035c93bc6a4
+15481	25065	1764379747723112873	/Users/issaennab/dev/work/workspace/unity/HelloWorld/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/25152766/obj/arm64-v8a/libswappywrapper.so	da7fdcc6bebf1ce8
