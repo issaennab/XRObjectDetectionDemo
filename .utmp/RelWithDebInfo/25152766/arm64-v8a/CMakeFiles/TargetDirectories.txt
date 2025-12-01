@@ -1,0 +1,8 @@
+/Users/issaennab/dev/work/workspace/unity/HelloWorld/.utmp/RelWithDebInfo/25152766/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/issaennab/dev/work/workspace/unity/HelloWorld/.utmp/RelWithDebInfo/25152766/arm64-v8a/CMakeFiles/rebuild_cache.dir
+/Users/issaennab/dev/work/workspace/unity/HelloWorld/.utmp/RelWithDebInfo/25152766/arm64-v8a/GameActivity/CMakeFiles/game.dir
+/Users/issaennab/dev/work/workspace/unity/HelloWorld/.utmp/RelWithDebInfo/25152766/arm64-v8a/GameActivity/CMakeFiles/edit_cache.dir
+/Users/issaennab/dev/work/workspace/unity/HelloWorld/.utmp/RelWithDebInfo/25152766/arm64-v8a/GameActivity/CMakeFiles/rebuild_cache.dir
+/Users/issaennab/dev/work/workspace/unity/HelloWorld/.utmp/RelWithDebInfo/25152766/arm64-v8a/FramePacing/CMakeFiles/swappywrapper.dir
+/Users/issaennab/dev/work/workspace/unity/HelloWorld/.utmp/RelWithDebInfo/25152766/arm64-v8a/FramePacing/CMakeFiles/edit_cache.dir
+/Users/issaennab/dev/work/workspace/unity/HelloWorld/.utmp/RelWithDebInfo/25152766/arm64-v8a/FramePacing/CMakeFiles/rebuild_cache.dir
