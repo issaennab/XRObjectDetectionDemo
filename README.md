@@ -228,7 +228,11 @@ Pull requests welcome! Please open an issue first to discuss proposed changes.
 
 ## Contact
 
-Created by [@issaennab](https://github.com/issaennab)
+Created by
+
+- [@issaennab](https://github.com/issaennab)
+- [@MohammadA98](https://github.com/MohammadA98)
+-
 
 ---
 

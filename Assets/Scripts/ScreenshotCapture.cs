@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
 using System.IO;
+using UnityEngine.InputSystem;
+using TMPro;
 
 [System.Serializable]
 public class ImageRequest
@@ -30,26 +32,93 @@ public class ScreenshotCapture : MonoBehaviour
     public Camera captureCamera;
     public bool saveToDisk = false;
 
-    private float messageTimer = 0f;
+    [Header("YOLO API Settings")]
+    [Tooltip("Your Mac's local IP address (find it with: ifconfig | grep 'inet ')")]
+    public string yoloServerIP = "127.0.0.1";  // Use 127.0.0.1 with adb reverse, or 192.168.2.50 for WiFi
+    public int yoloServerPort = 8000;
+
+    [Header("VR UI Display")]
+    [Tooltip("Assign a TextMeshPro - Text component to display detection results in VR")]
+    public TextMeshProUGUI detectionText;
+    [Tooltip("Distance from camera to place the text panel (in meters)")]
+    public float textDistance = 2.0f;
+    [Tooltip("Auto-create text display if none assigned")]
+    public bool autoCreateTextDisplay = true;
+
+    // Input System actions for XR controllers
+    public InputActionProperty rightControllerButtonA;
+    public InputActionProperty rightControllerButtonB;
+    public InputActionProperty rightControllerTrigger;
+
+    private bool showMessage = false;
     private string uiMessage = "";
+    private GameObject textCanvasObject;
+    private bool isCapturing = false;  // Prevent multiple simultaneous captures
 
     void Start()
     {
-        Debug.Log("[ScreenshotCapture] Ready. Press C, Mouse Click, Right Trigger, or A Button (Quest) to capture.");
+        Debug.Log("[ScreenshotCapture] Ready. Press Button A, B, or Trigger on right controller to capture.");
 
         if (captureCamera == null)
         {
             Debug.LogWarning("[ScreenshotCapture] No camera assigned. Assign XR Main Camera!");
         }
+
+        // Auto-create VR text display if needed
+        if (autoCreateTextDisplay && detectionText == null)
+        {
+            CreateVRTextDisplay();
+        }
+
+        // Enable input actions
+        rightControllerButtonA.action?.Enable();
+        rightControllerButtonB.action?.Enable();
+        rightControllerTrigger.action?.Enable();
+
+        Debug.Log("[ScreenshotCapture] Input actions enabled");
     }
 
     void Update()
     {
-        // 1️⃣ Keyboard → C key for capture
+        // Check XR Input System buttons
+        if (rightControllerButtonA.action != null && rightControllerButtonA.action.WasPressedThisFrame())
+        {
+            Debug.Log("[ScreenshotCapture] RIGHT CONTROLLER BUTTON A detected");
+            TriggerCapture("Right Controller Button A");
+        }
+
+        if (rightControllerButtonB.action != null && rightControllerButtonB.action.WasPressedThisFrame())
+        {
+            Debug.Log("[ScreenshotCapture] RIGHT CONTROLLER BUTTON B detected");
+            TriggerCapture("Right Controller Button B");
+        }
+
+        if (rightControllerTrigger.action != null && rightControllerTrigger.action.WasPressedThisFrame())
+        {
+            Debug.Log("[ScreenshotCapture] RIGHT CONTROLLER TRIGGER detected");
+            TriggerCapture("Right Controller Trigger");
+        }
+
+        // 1️⃣ Keyboard → C key to clear message OR capture if no message shown
         if (Input.GetKeyDown(KeyCode.C))
         {
-            Debug.Log("[ScreenshotCapture] C KEY detected");
-            TriggerCapture("Keyboard C");
+            if (showMessage)
+            {
+                Debug.Log("[ScreenshotCapture] C KEY detected - Clearing message");
+                showMessage = false;
+                uiMessage = "";
+
+                // Hide VR text display
+                if (textCanvasObject != null)
+                {
+                    textCanvasObject.SetActive(false);
+                }
+            }
+            else
+            {
+                Debug.Log("[ScreenshotCapture] C KEY detected - Capturing");
+                TriggerCapture("Keyboard C");
+            }
         }
 
         // 2️⃣ Mouse click
@@ -58,28 +127,16 @@ public class ScreenshotCapture : MonoBehaviour
             Debug.Log("[ScreenshotCapture] MOUSE CLICK detected");
             TriggerCapture("Mouse Click");
         }
-
-        // 3️⃣ Quest 3 trigger (primary index trigger)
-        if (OVRInput.GetDown(OVRInput.RawButton.RIndexTrigger))
-        {
-            Debug.Log("[ScreenshotCapture] QUEST R INDEX TRIGGER detected");
-            TriggerCapture("Quest R Index Trigger");
-        }
-
-        // 4️⃣ Also support Oculus mapped "Button.One" (A button)
-        if (OVRInput.GetDown(OVRInput.RawButton.A))
-        {
-            Debug.Log("[ScreenshotCapture] QUEST A BUTTON detected");
-            TriggerCapture("Quest A Button");
-        }
-
-        // Handle UI fade timer
-        if (messageTimer > 0f)
-            messageTimer -= Time.deltaTime;
     }
 
-    void TriggerCapture(string source)
+    public void TriggerCapture(string source)
     {
+        if (isCapturing)
+        {
+            Debug.Log($"[ScreenshotCapture] ⏸️ Capture already in progress, ignoring trigger from {source}");
+            return;
+        }
+
         Debug.Log($"[ScreenshotCapture] TRIGGER → {source}");
         Debug.Log("[ScreenshotCapture] Starting coroutine...");
         StartCoroutine(Capture());
@@ -87,6 +144,9 @@ public class ScreenshotCapture : MonoBehaviour
 
     IEnumerator Capture()
     {
+        isCapturing = true;
+        ShowMessage("📸 Analyzing...");
+
         yield return new WaitForEndOfFrame();
 
         Debug.Log("[ScreenshotCapture] Beginning capture...");
@@ -120,19 +180,19 @@ public class ScreenshotCapture : MonoBehaviour
 
         byte[] jpegBytes = tex.EncodeToJPG(60);
         Debug.Log("[ScreenshotCapture] JPG byte size → " + jpegBytes.Length);
+        Debug.Log($"[ScreenshotCapture] Image size being sent: {width}x{height}");
+        Debug.Log($"[ScreenshotCapture] JPG file size: {jpegBytes.Length / 1024f:F2} KB ({jpegBytes.Length} bytes)");
 
         Destroy(tex);
 
-        ShowMessage("Screenshot Captured ✓");
-
-        // Send to YOLO API
+        // Send to YOLO API (keeps "Analyzing..." message visible)
         StartCoroutine(SendToYoloAPI(jpegBytes));
     }
 
     IEnumerator SendToYoloAPI(byte[] imageBytes)
     {
         Debug.Log("[YOLO] ====== Starting YOLO API Request ======");
-        string url = "http://127.0.0.1:8000/detect";
+        string url = $"http://{yoloServerIP}:{yoloServerPort}/detect";
         Debug.Log($"[YOLO] Target URL: {url}");
         Debug.Log($"[YOLO] Input image bytes length: {imageBytes.Length}");
 
@@ -151,6 +211,9 @@ public class ScreenshotCapture : MonoBehaviour
 
         Debug.Log("[YOLO] Creating UnityWebRequest...");
         UnityEngine.Networking.UnityWebRequest request = new UnityEngine.Networking.UnityWebRequest(url, "POST");
+
+        // Allow insecure HTTP connections (needed for local development)
+        request.certificateHandler = new AcceptAllCertificatesHandler();
 
         Debug.Log("[YOLO] Setting upload handler...");
         request.uploadHandler = new UnityEngine.Networking.UploadHandlerRaw(jsonBytes);
@@ -224,26 +287,83 @@ public class ScreenshotCapture : MonoBehaviour
 
         Debug.Log("[YOLO] ====== YOLO API Request Complete ======");
         request.Dispose();
+
+        // Release the capture lock
+        isCapturing = false;
     }
 
     void ShowMessage(string msg)
     {
         uiMessage = msg;
-        messageTimer = 3f;  // Extended to 3 seconds for detection results
-        Debug.Log($"[UI] Showing message: {msg}");
+        showMessage = true;
+        Debug.Log($"[UI] Showing message: {msg} (Press C to clear)");
+
+        // Update VR text display
+        if (detectionText != null)
+        {
+            detectionText.text = msg;
+            if (textCanvasObject != null)
+            {
+                textCanvasObject.SetActive(true);
+            }
+        }
     }
 
-    void OnGUI()
+    void CreateVRTextDisplay()
     {
-        if (messageTimer > 0f)
-        {
-            GUIStyle style = new GUIStyle(GUI.skin.label);
-            style.fontSize = 20;  // Slightly smaller to fit longer detection messages
-            style.normal.textColor = Color.green;  // Green for better visibility
-            style.alignment = TextAnchor.UpperCenter;
-            style.wordWrap = true;  // Allow text wrapping for long detection lists
+        Debug.Log("[UI] Creating VR text display...");
 
-            GUI.Label(new Rect(10, 20, Screen.width - 20, 100), uiMessage, style);
-        }
+        // Create Canvas GameObject
+        textCanvasObject = new GameObject("DetectionTextCanvas");
+        Canvas canvas = textCanvasObject.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.WorldSpace;
+
+        // Add CanvasScaler for better resolution
+        UnityEngine.UI.CanvasScaler scaler = textCanvasObject.AddComponent<UnityEngine.UI.CanvasScaler>();
+        scaler.dynamicPixelsPerUnit = 10;
+
+        // Position canvas in front of camera
+        textCanvasObject.transform.SetParent(captureCamera.transform, false);
+        textCanvasObject.transform.localPosition = new Vector3(0, 0.3f, textDistance);
+        textCanvasObject.transform.localRotation = Quaternion.identity;
+
+        // Set canvas size (800x200 units in world space)
+        RectTransform canvasRect = textCanvasObject.GetComponent<RectTransform>();
+        canvasRect.sizeDelta = new Vector2(800, 200);
+        canvasRect.localScale = new Vector3(0.001f, 0.001f, 0.001f); // Scale down for VR
+
+        // Create Text GameObject
+        GameObject textObject = new GameObject("DetectionText");
+        textObject.transform.SetParent(textCanvasObject.transform, false);
+
+        // Add TextMeshProUGUI component
+        detectionText = textObject.AddComponent<TextMeshProUGUI>();
+        detectionText.text = "Ready to detect objects...";
+        detectionText.fontSize = 48;
+        detectionText.color = Color.green;
+        detectionText.alignment = TextAlignmentOptions.Center;
+        detectionText.textWrappingMode = TextWrappingModes.Normal;
+
+        // Set text RectTransform to fill canvas
+        RectTransform textRect = textObject.GetComponent<RectTransform>();
+        textRect.anchorMin = new Vector2(0, 0);
+        textRect.anchorMax = new Vector2(1, 1);
+        textRect.offsetMin = new Vector2(20, 20);
+        textRect.offsetMax = new Vector2(-20, -20);
+
+        // Initially hide the canvas
+        textCanvasObject.SetActive(false);
+
+        Debug.Log("[UI] VR text display created successfully!");
+    }
+
+}
+
+// Certificate handler to allow HTTP connections (for local development)
+public class AcceptAllCertificatesHandler : UnityEngine.Networking.CertificateHandler
+{
+    protected override bool ValidateCertificate(byte[] certificateData)
+    {
+        return true; // Accept all certificates (use only for local development!)
     }
 }
